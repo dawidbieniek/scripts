@@ -9,9 +9,14 @@ declare -A downloads=(
 )
 
 function main() {
+    if [ $# -eq 0 ]; then
+        usage
+        exit 1;
+    fi
+
     local command=$1
     shift
-    
+
     case $command in
         download)
             download_command "$@"
