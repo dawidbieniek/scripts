@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# Array of available downloads
+declare -A downloads=(
+    ["python"]="https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore"
+    ["dotnet"]="https://raw.githubusercontent.com/github/gitignore/main/community/DotNet/core.gitignore"
+    ["cpp"]="https://raw.githubusercontent.com/github/gitignore/main/C%2B%2B.gitignore"
+    # Add more entries here...
+)
+
+function main() {
+    local command=$1
+    shift
+    
+    case $command in
+        download)
+            download_command "$@"
+            ;;
+        list)
+            list_command
+            ;;
+        *)
+            echo "Unknown command: $command" >&2
+            usage
+            exit 1
+            ;;
+    esac
+}
+
+function download_command() {
+    local name=$1
+    
+    if [[ ! ${downloads[$name]} ]]; then
+        echo "Invalid download name: $name" >&2
+        echo "Use 'list' command to see available options." >&2
+        return 1
+    fi
+    
+    local url=${downloads[$name]}
+    
+    echo "Downloading $name.gitignore..."
+    curl -f -o ".gitignore" "$url"
+    
+    if [ $? -eq 0 ]; then
+        echo "Downloaded $name.gitignore successfully."
+    else
+        echo "Failed to download $name.gitignore" >&2
+        return 1
+    fi
+}
+
+function list_command() {
+    echo "Available downloads:"
+    
+    # Generate the list content
+    local list_content=""
+    for name in "${!downloads[@]}"; do
+        local url=${downloads[$name]}
+        list_content+="\t$name\t$url\n"
+    done
+    
+    # Use column to align the output
+    echo -e "$list_content" | column -t -s $'\t'
+}
+
+function usage() {
+    cat <<EOF
+Usage: $(basename "$0") <command> [<args>]
+
+Commands:
+  download <name>   Download a specific .gitignore file
+  list              List available downloads
+
+Examples:
+  $(basename "$0") download python
+  $(basename "$0") list
+EOF
+}
+
+main "$@"
+

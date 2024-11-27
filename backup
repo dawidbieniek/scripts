@@ -1,0 +1,45 @@
+#!/bin/bash
+# Should be run by cron
+# Copies and compresses $SOURCE_DIR to $DISK
+
+SOURCE_DIR="/srv/samba"
+MOUNT_POINT="/tmp/backupDisk"
+DISK="/dev/sdb1"
+FILENAME="backups/backup-`date +%Y-%m-%d`.tar.gz"
+
+BACKUP_FILE="$MOUNT_POINT/$FILENAME"
+
+LOG="/usr/local/bin/log"
+DISK_USAGE="/usr/local/bin/diskUsage"
+
+# Create mount directory
+mkdir $MOUNT_POINT
+
+# Mount the disk
+mount $DISK $MOUNT_POINT
+
+# Check if the mount was successful
+if [ $? -eq 0 ]; then
+  # Print backup start message
+  $LOG "Started backup of $SOURCE_DIR"
+
+  # Create backup
+  tar czf $BACKUP_FILE $SOURCE_DIR
+
+  # Print end status message with the file name.
+  $LOG "Backup of $SOURCE_DIR completed. The backup file is $BACKUP_FILE. Disk usage `$DISK_USAGE $DISK`"
+
+  # Unmount the disk
+  umount $MOUNT_POINT
+
+  # Remove mount directory
+  rmdir $MOUNT_POINT
+
+  if [ $? -eq 0 ]; then
+    $LOG "Disk $DISK unmounted successfully."
+  else
+    $LOG "Failed to unmount disk $DISK."
+  fi
+else
+  $LOG "Failed to mount disk $DISK. Backup was not created."
+fi

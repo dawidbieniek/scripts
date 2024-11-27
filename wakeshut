@@ -1,0 +1,14 @@
+#!/bin/bash
+# Should be run by cron
+# Sets next system wake up to 09:00 next day
+# And immediately shuts down the system
+
+RTC_FILE=/sys/class/rtc/rtc0/wakealarm
+WAKE_TIME="09:00"
+
+# Clear wakealarm file & set next system wake to 06:00
+echo 0 > $RTC_FILE
+echo `date '+%s' -d "tomorrow $WAKE_TIME"` > $RTC_FILE
+
+# Shutdown system
+/sbin/shutdown -h now

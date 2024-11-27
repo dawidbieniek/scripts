@@ -1,0 +1,6 @@
+#!/bin/bash
+# Writes message with current date to /home/dawid/log
+
+LOG_DIR="/home/dawid/log"
+
+echo -e "(`date`)\t$1" >> $LOG_DIR
